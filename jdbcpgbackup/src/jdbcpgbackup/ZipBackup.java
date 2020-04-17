@@ -412,10 +412,10 @@ public final class ZipBackup {
       execSqlZipEntry(zipFile, con, indexesSql, isNewSchema);
       timerEnd("indexes");
 
-      // timerStart("constraints");
-      // ZipEntry constraintsSql = zipFile.getEntry(schemaRoot + "constraints.sql");
-      // execSqlZipEntry(zipFile, con, constraintsSql, isNewSchema);
-      // timerEnd("constraints");
+      timerStart("constraints");
+      ZipEntry constraintsSql = zipFile.getEntry(schemaRoot + "constraints.sql");
+      execSqlZipEntry(zipFile, con, constraintsSql, isNewSchema);
+      timerEnd("constraints");
 
       resetSearchPath(con);
       resetRole(con);

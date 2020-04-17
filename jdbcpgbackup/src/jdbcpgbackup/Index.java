@@ -20,7 +20,8 @@ class Index extends DbBackupObject {
       try {
         stmt = con.prepareStatement(
             // "SELECT * FROM pg_indexes WHERE schemaname = ?");
-            // duplicate the pg_indexes view definition but skipping the primary indexes
+            // duplicate the pg_indexes view definition but skipping the primary indexes as well as
+            // unique indexes that will be covered by constraints
             "SELECT c.relname AS tablename, i.relname AS indexname, "
                 + "pg_get_indexdef(i.oid) AS indexdef " + "FROM pg_index x "
                 + "JOIN pg_class c ON c.oid = x.indrelid "
@@ -28,7 +29,7 @@ class Index extends DbBackupObject {
                 // "LEFT JOIN pg_namespace n ON n.oid = c.relnamespace " +
                 // "LEFT JOIN pg_tablespace t ON t.oid = i.reltablespace " +
                 "WHERE c.relkind = 'r'::\"char\" AND i.relkind = 'i'::\"char\" "
-                + "AND NOT x.indisprimary AND c.relnamespace = ?");
+                + "AND NOT x.indisunique AND NOT x.indisprimary AND c.relnamespace = ?");
         stmt.setInt(1, schema.getOid());
         ResultSet rs = stmt.executeQuery();
         while (rs.next()) {
@@ -96,7 +97,8 @@ class Index extends DbBackupObject {
       return con.prepareStatement("SELECT x.indrelid AS table_oid, i.relname AS indexname, "
           + "pg_get_indexdef(i.oid) AS indexdef, " + "i.relnamespace AS schema_oid "
           + "FROM pg_index x " + "JOIN pg_class i ON i.oid = x.indexrelid "
-          + "WHERE i.relkind = 'i'::\"char\" " + "AND NOT x.indisprimary ");
+          + "WHERE i.relkind = 'i'::\"char\" "
+          + "AND NOT x.indisprimary AND NOT NOT x.indisunique ");
     }
 
     @Override
