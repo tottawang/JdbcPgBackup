@@ -25,11 +25,12 @@ class Index extends DbBackupObject {
             "SELECT c.relname AS tablename, i.relname AS indexname, "
                 + "pg_get_indexdef(i.oid) AS indexdef " + "FROM pg_index x "
                 + "JOIN pg_class c ON c.oid = x.indrelid "
-                + "JOIN pg_class i ON i.oid = x.indexrelid " +
+                + "JOIN pg_class i ON i.oid = x.indexrelid "
+                + "LEFT JOIN pg_constraint l ON i.relname = l.conname "
                 // "LEFT JOIN pg_namespace n ON n.oid = c.relnamespace " +
                 // "LEFT JOIN pg_tablespace t ON t.oid = i.reltablespace " +
-                "WHERE c.relkind = 'r'::\"char\" AND i.relkind = 'i'::\"char\" "
-                + "AND NOT x.indisprimary AND c.relnamespace = ?");
+                + "WHERE c.relkind = 'r'::\"char\" AND i.relkind = 'i'::\"char\" "
+                + "AND l.conname IS NULL " + "AND NOT x.indisprimary AND c.relnamespace = ?");
         stmt.setInt(1, schema.getOid());
         ResultSet rs = stmt.executeQuery();
         while (rs.next()) {
@@ -97,7 +98,8 @@ class Index extends DbBackupObject {
       return con.prepareStatement("SELECT x.indrelid AS table_oid, i.relname AS indexname, "
           + "pg_get_indexdef(i.oid) AS indexdef, " + "i.relnamespace AS schema_oid "
           + "FROM pg_index x " + "JOIN pg_class i ON i.oid = x.indexrelid "
-          + "WHERE i.relkind = 'i'::\"char\" " + "AND NOT x.indisprimary ");
+          + "LEFT JOIN pg_constraint l ON i.relname = l.conname "
+          + "WHERE i.relkind = 'i'::\"char\" " + "AND l.conname IS NULL AND NOT x.indisprimary ");
     }
 
     @Override

@@ -372,6 +372,11 @@ public final class ZipBackup {
 
       String schemaRoot = zipRoot + "schemas/" + fromSchemaName + "/";
 
+      timerStart("functions");
+      ZipEntry functionsSql = zipFile.getEntry(schemaRoot + "functions.sql");
+      execSqlZipEntry(zipFile, con, functionsSql, isNewSchema);
+      timerEnd("functions");
+
       timerStart("sequences");
       ZipEntry sequencesSql = zipFile.getEntry(schemaRoot + "sequences.sql");
       execSqlZipEntry(zipFile, con, sequencesSql, isNewSchema);
@@ -381,6 +386,11 @@ public final class ZipBackup {
       ZipEntry tablesSql = zipFile.getEntry(schemaRoot + "tables.sql");
       execSqlZipEntry(zipFile, con, tablesSql, isNewSchema);
       timerEnd("tables");
+
+      timerStart("views");
+      ZipEntry viewsSql = zipFile.getEntry(schemaRoot + "views.sql");
+      execSqlZipEntry(zipFile, con, viewsSql, isNewSchema);
+      timerEnd("views");
 
       timerStart("table data");
       Set<ZipEntry> tableEntries = getSchemaTables(zipFile).get(fromSchemaName);
@@ -397,25 +407,15 @@ public final class ZipBackup {
       }
       timerEnd("table data");
 
-      timerStart("functions");
-      ZipEntry functionsSql = zipFile.getEntry(schemaRoot + "functions.sql");
-      execSqlZipEntry(zipFile, con, functionsSql, isNewSchema);
-      timerEnd("functions");
-
-      timerStart("views");
-      ZipEntry viewsSql = zipFile.getEntry(schemaRoot + "views.sql");
-      execSqlZipEntry(zipFile, con, viewsSql, isNewSchema);
-      timerEnd("views");
+      timerStart("constraints");
+      ZipEntry constraintsSql = zipFile.getEntry(schemaRoot + "constraints.sql");
+      execSqlZipEntry(zipFile, con, constraintsSql, isNewSchema);
+      timerEnd("constraints");
 
       timerStart("indexes");
       ZipEntry indexesSql = zipFile.getEntry(schemaRoot + "indexes.sql");
       execSqlZipEntry(zipFile, con, indexesSql, isNewSchema);
       timerEnd("indexes");
-
-      timerStart("constraints");
-      ZipEntry constraintsSql = zipFile.getEntry(schemaRoot + "constraints.sql");
-      execSqlZipEntry(zipFile, con, constraintsSql, isNewSchema);
-      timerEnd("constraints");
 
       resetSearchPath(con);
       resetRole(con);
